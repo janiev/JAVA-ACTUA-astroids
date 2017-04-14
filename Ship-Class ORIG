@@ -2,7 +2,7 @@ package asteroids.model;
 import asteroids.exceptions.*;
 import be.kuleuven.cs.som.annotate.*;
 
-
+// Test Aanpassing.....
 /**
  * A class of ships with a representative position, velocity, orientation, radius and a mutable maximum velocity.
  * @invar 	Each ship must have a valid position.
@@ -83,7 +83,7 @@ public class Ship extends Entity{
 	public void turn(double angle){
 		this.setOrientation(this.getOrientation() + angle);
 	}
-
+//tweede test aanpassing.
 	//-----------------------------------------------------------------------------------------------------------------------------------------
 	// Thrusters
 	//-----------------------------------------------------------------------------------------------------------------------------------------
