@@ -1,0 +1,276 @@
+package asteroids.model;
+import asteroids.exceptions.*;
+import be.kuleuven.cs.som.annotate.*;
+
+
+/**
+ * A class of ships with a representative position, velocity, orientation, radius and a mutable maximum velocity.
+ * @invar 	Each ship must have a valid position.
+ * 			| isValidPosition(this.getPosition())
+ * @invar 	Each ship must have a valid velocity.
+ * 			| MINIMUM_VELOCITY <= getMagnitudeVelocity(this.getXVelocity(), getYVelocity()) <= MAXIMUM_VELOCITY
+ * @invar 	Each ship must have a valid orientation.
+ * 			| isValidOrientation(this.getOrientation())
+ * @invar	The value of the radius of each ship must be larger than the minimum radius.
+ * 			| getRadius() >= MINIMUM_RADIUS > 0.0
+ * 
+ * @author 	Dailen Senica
+ * @studies Informatica
+ * @repos 	No repository
+ */
+@Value
+public class Ship extends Entity{
+	
+	private static final double MINIMUM_ORIENTATION = 0.0;
+	private static final double MAXIMUM_ORIENTATION = 2.0 *Math.PI;
+	private double MAXIMUM_VELOCITY = 300000.0;
+	private static final double SPEED_OF_LIGHT = 300000.0;
+	private final static double minDensity=1.42*Math.pow(10, 12);
+	private final double minMass=(4/3)*Math.PI*Math.pow(this.getRadius(), 3)*Ship.minDensity;
+	
+	/**
+	 * Create a new ship with a given position, velocity, radius and orientation.
+	 * 
+	 * @param xPosition
+	 * 			Variable representing this ship's position on the x-axis.
+	 * @param yPosition
+	 * 			Variable representing this ship's position on the y-axis.
+	 * @param xVelocity
+	 * 			Variable representing the X-component of this ship's velocity.
+	 * @param yVelocity
+	 * 			Variable representing the Y-component of this ship's velocity.
+	 * @param radius
+	 * 			Variable representing the ship's radius.
+	 * @param orientation
+	 * 			Variable representing the ship's orientation in radians.
+	 * 
+	 * @effect  The position is set by using the setter.
+	 * 			|this.setPosition(xPosition, yPosition)
+	 * @effect  The velocity is set by using the setter.
+	 * 			|this.setVelocity(xVelocity, yVelocity)
+	 * @effect  The Orientation is set by using the setter.
+	 *			|this.setOrientation(orientation)
+	 * @effect  The Radius is set by using the setter.
+	 * 			|this.setRadius(radius)
+	 * 
+	 * @throws IllegalPositionException
+	 * 			One or more of the given positions components are not a number.
+	 * 			|!isValidPosition(position)
+	 * @throws IllegalRadiusException
+	 * 			The given radius is not valid.
+	 * 			|!isValidRadius(radius)
+	 */
+	public Ship(double xPosition, double yPosition , double xVelocity, double yVelocity, double radius, double orientation) throws IllegalPositionException, IllegalRadiusException {
+
+		setPosition(xPosition, yPosition);
+		setVelocity(xVelocity, yVelocity);
+		setRadius(radius);
+		//LOLOL Deze assert mag weg.
+		assert isValidOrientation(orientation);
+		setOrientation(orientation);
+	}
+		
+	//-----------------------------------------------------------------------------------------------------------------------------------------
+	/**
+	 * Turn the ship over a given angle.
+	 * 
+	 * @param 	angle
+	 * 			The given angle to add to the current orientation.
+	 * @pre		The given angle must be expressed in radians.		
+	 * @effect	The new orientation of this ship is set by adding the angle to the current orientation modulo 2*PI.
+	 * 			| new.getOrientation == this.setOrientation(this.getOrientation() + angle)
+	 */
+	public void turn(double angle){
+		this.setOrientation(this.getOrientation() + angle);
+	}
+
+	//-----------------------------------------------------------------------------------------------------------------------------------------
+	// Thrusters
+	//-----------------------------------------------------------------------------------------------------------------------------------------
+	
+	public void thrusterOn(){
+		this.thrusterState = true;
+	}
+	
+	public void thrusterOff(){
+		this.thrusterState = false;
+	}
+	
+	//Thruster State Property BAD DOCUMENTATION D: D: D: D:
+	//Getter
+	/**
+	 * Gets the thrusterState
+	 */
+	@Basic
+	public boolean getThrusterState(){
+		return this.thrusterState;
+	}
+
+	/**
+	 * Property registering the thusterState
+	 */
+	
+	private boolean thrusterState;
+	
+	
+	/**
+	 * Change the velocity using the current velocity, the orientation and the given acceleration. 
+	 * 
+	 * @param 	acceleration
+	 * 			The amount to accelerate.
+	 * @post	A negative given acceleration will be set to 0.
+	 * 			| if (a < 0.0) {then a = 0.0};
+	 * @effect	The velocity of this ship is changed based on the current velocity, its orientation and a given acceleration.
+	 * 			| setVelocity(this.getXVelocity() + acceleration*Math.cos(this.getOrientation()), 
+	 *			|	this.getYVelocity() + acceleration*Math.sin(this.getOrientation())
+	 */
+	public void thrust(double acceleration, double time){
+		if (acceleration < 0.0){
+			acceleration = 0.0;
+		}
+		if (!(acceleration < 0.0) && !Double.isNaN(acceleration) && !(time < 0.0) && !Double.isNaN(time)) {
+			this.setVelocity(this.getXVelocity() + time*acceleration*Math.cos(this.getOrientation()), 
+					this.getYVelocity() + time*acceleration*Math.sin(this.getOrientation()));
+		}	
+	}
+	
+	
+	
+	//--------------------------------------------------------------------------------------------------------------------------
+	// Orientation
+	// 	Nominally
+	//--------------------------------------------------------------------------------------------------------------------------
+	
+	/**
+	 * Variable representing the ship's orientation.
+	 */	
+	private double orientation;
+	
+	/**
+	 * Returns the orientation of this ship.
+	 */
+	@Basic
+	public double getOrientation(){
+		return this.orientation;
+	}
+	
+	/**
+	 * 
+	 * @param radian
+	 * 			The new orientation for this ship.
+	 * @pre 	The given orientation must be in radians.
+	 * @post	The orientation of this ship is equal to the given orientation.
+	 * 			| new.getOrientation() == orientation
+	 */
+	public void setOrientation(double radian){
+		if (radian < 0.0)
+			{
+			radian = (Math.PI*2) + radian%(Math.PI*2);
+			}
+		assert(isValidOrientation(radian%(Math.PI*2)));
+		this.orientation = (radian)%(Math.PI*2);
+	}
+	
+	/**
+	 * @param radian
+	 * 			The radius to be checked.
+	 * @return True if the radian is valid, False otherwise.
+	 * 			|result == radian >= MINIMUM_ORIENTATION && radian <= MAXIMUM_ORIENTATION
+	 */
+	public boolean isValidOrientation(double radian){
+		return (radian >= MINIMUM_ORIENTATION && radian <= MAXIMUM_ORIENTATION && !Double.isNaN(radian));
+	}
+	
+	//-----------------------------------------------------------------------------------------------------------------------------------------
+	// Velocity
+	//-----------------------------------------------------------------------------------------------------------------------------------------
+	
+	
+	/**
+	 * Sets the velocity of this ship to the given components.
+	 * @param xVelocity
+	 * 			The x-component of the new velocity. 
+	 * @param yVelocity
+	 * 			The y-component of the new velocity.
+	 * @post	The velocity of this ship is equal to the given position.
+	 * 			| new.getXVelocity() == xVelocity && new.getYVelocity() == yVelocity
+	 * @post	If the magnitude of the new velocity is greater than the maximum velocity,
+	 * 			the components of the velocity will be reduced by using the sine and cosine of
+	 * 			the ship's angle. The magnitude will then equal the maximum velocity.
+	 * 			|if (getMagnitudeVelocity(xVelocity, yVelocity) > MAXIMUM_VELOCITY) {
+	 *			|	this.xVelocity = Math.cos(this.getOrientation())*this.MAXIMUM_VELOCITY;
+	 *			|	this.yVelocity = Math.sin(this.getOrientation())*this.MAXIMUM_VELOCITY;
+	 */
+	public void setVelocity(double xVelocity, double yVelocity) {
+			
+			if (getMagnitudeVelocity(xVelocity, yVelocity) > MAXIMUM_VELOCITY) {
+				this.xVelocity = Math.cos(this.getOrientation())*this.MAXIMUM_VELOCITY;
+				this.yVelocity = Math.sin(this.getOrientation())*this.MAXIMUM_VELOCITY;
+			}
+			else {
+				this.xVelocity = xVelocity;
+				this.yVelocity = yVelocity;
+			}
+		}
+
+	/**
+	 * Returns the maximum velocity for this ship.
+	 */
+	@Basic
+	public double getMaxVelocity(){
+		return this.MAXIMUM_VELOCITY;
+	}
+	
+	/**
+	 * Sets the maximum velocity of this ship to the given value.
+	 * @param max
+	 * 			The new value of the maximum velocity.
+	 * @pre 	The given value must be greater than the minimum velocity, and smaller than the speed of light.
+	 * 			|MINIMUM_VELOCITY <= max <= SPEED_OF_LIGHT
+	 * @post 	The maximum velocity of this ship is equal to the given value.
+	 * 			|new.GetMaximumVelocity() == max
+	 */
+	public void setMaxVelocity(double max){
+		if (max < SPEED_OF_LIGHT){
+			this.MAXIMUM_VELOCITY = max;
+		}
+	}
+	
+	//-----------------------------------------------------------------------------------------------------------------------------------------
+	// Mass
+	//-----------------------------------------------------------------------------------------------------------------------------------------
+	
+	//Mass GETTERS.
+
+	/**
+	 * Return the totalMass of this Ship.
+	 */
+	@Basic @Raw
+	public double getTotalMass() {
+		return this.totalMass;
+	}
+	/**
+	 * Return the mass density of this ship
+	 * 	 |result == this.getTotalMass()/((4/3)*Math.PI*Math.pow(this.getRadius(),3))
+	 */
+	public double getDensity(){
+	double result1 = Math.PI*Math.pow(this.getRadius(), 3.0)*(4.0/3.0);
+	double result = this.getTotalMass()/result1;
+	return result;
+	}
+	
+	public void setMass(double mass){
+		if (mass < minMass) {mass = minMass;}
+		this.mass = mass;
+	}
+	//VARIABLES
+	/**
+	 * Variable registering the totalMass of this Ship.
+	 */
+	public double totalMass;
+	// Ik weet nog nie of we totalMass gaan gebruiken, maar ik laat het nog staan.
+	
+	// Mass is totaal, dus heeft geen checker.
+	// In de plaats moet ge een if() schrijven voor de minimumwaarde, en als mass kleiner is,
+	// wordt mass gewoon de minimumwaarde.
+}
