@@ -1,0 +1,76 @@
+package asteroids.model;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
+
+import asteroids.exceptions.IllegalDenominatorException;
+import asteroids.exceptions.IllegalPositionException;
+import asteroids.exceptions.IllegalRadiusException;
+import asteroids.exceptions.WrongEntityException;
+
+public class JunitTestSuiteJan {
+
+	private final double LOL = 5;
+	private final double L=0.0001;
+	
+	@Test
+	public void testSomething() throws NullPointerException{
+		assertEquals(500, 500);
+	}
+	@Test
+	public void testSomething3() throws NullPointerException, WrongEntityException, IllegalPositionException, IllegalRadiusException{
+		World world = new World(500,500);
+		Ship ship = new Ship(250,250,0,0,30,3,50);
+		world.destroy();
+		world.addEntity(ship);
+		
+	}
+	@Test
+	public void testFireBullet() throws IllegalPositionException, IllegalRadiusException, NullPointerException, WrongEntityException{
+		Ship A = new Ship(250,250,-20,45.7,20,Math.PI,3);
+		Bullet bullet1 = new Bullet(0,0,0,0,4);
+		System.out.println(A.getMass());
+		System.out.println(A.getRadius());	
+		A.addBullet(bullet1);
+	}
+	@Test
+	public void testB() throws IllegalPositionException, IllegalRadiusException, NullPointerException, IllegalDenominatorException,WrongEntityException{
+		try{System.out.println("vanaf hier begint TESTB outputs");
+		// maak nieuw schip
+		Ship A = new Ship(250,250,-20,45.7,20,Math.PI,3);
+		//maak nieuwe bullet
+		Bullet bullet2 = new Bullet(0,0,0,0,4);
+		//maak nieuwe world
+		World world = new World(1000,1000);
+		//maak tweede nieuwe bullet.
+		Bullet bullet1 = new Bullet(0, 0, 0, 0, 4);
+		//add entity aan world.
+		world.addEntity(A);
+		System.out.println(A.getTotalMass());
+		A.addBullet(bullet1);
+		System.out.println(A.getTotalMass());
+		assertEquals(bullet1.getMass(), A.getTotalMass(),L);
+		System.out.println(A.bullets.size());
+		A.removeBullet(bullet1);
+		System.out.println(A.bullets.size());
+		System.out.println(bullet1.getShip());
+		//add bullet 1 en 2
+		A.addBullet(bullet1);
+		A.addBullet(bullet2);
+		System.out.println(A.bullets.size());
+		world.evolve(10);
+		
+		}
+	 catch (ArrayIndexOutOfBoundsException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	catch (StackOverflowError e){
+		e.printStackTrace();
+	}
+		
+		
+		
+	}
+		
+}
